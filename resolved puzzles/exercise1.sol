@@ -1,26 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract UserPreferences {
-    struct Preference {
-        string favoriteColor;
-        uint256 favoriteNumber;
+contract PiggyBank {
+    address public owner;
+
+    constructor() {
+        owner = msg.sender;
     }
 
-    mapping(address => Preference) public preferences;
+    function deposit() external payable {}
 
-    event PreferenceUpdated(address indexed user, string color, uint256 number);
-
-    function updatePreference(string memory _color, uint256 _number) public {
-        preferences[msg.sender] = Preference(_color, _number);
-        emit PreferenceUpdated(msg.sender, _color, _number);
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not the owner!");
+        _;
     }
 
-    function getPreference(address _user) public view returns (string memory, uint256) {
-        Preference memory pref = preferences[_user];
-        if (bytes(pref.favoriteColor).length == 0) {
-            revert("No preference set for this user");
-        }
-        return (pref.favoriteColor, pref.favoriteNumber);
+    function withdraw() external onlyOwner {
+        payable(msg.sender).transfer(address(this).balance);
     }
 }
