@@ -1,0 +1,82 @@
+Ethereum Smart Contract Interaction with Web3.js
+================================================
+
+This guide shows how to interact with a deployed Ethereum smart contract using Web3.js and Node.js.
+
+Prerequisites
+-------------
+- Node.js (v18+ recommended)
+- A running Ethereum node (local or remote)
+- Truffle (for building and deploying the smart contract)
+
+Installation
+------------
+Install Web3:
+
+    npm install web3
+
+Usage
+-----
+1. Create a file named interact.mjs:
+
+    nano interact.mjs
+
+2. Paste the following code inside:
+
+    import Web3 from "web3";
+    import fs from "fs";
+
+    // --- Connect to local Ethereum node ---
+    const rpcUrl = "http://192.168.64.16:8545";
+    const web3 = new Web3(rpcUrl);
+
+    // --- Load ABI from Truffle build ---
+    const contractJson = JSON.parse(fs.readFileSync("build/contracts/MyContract.json", "utf8"));
+    const abi = contractJson.abi;
+
+    // --- Contract address ---
+    const contractAddress = "0xD7858222aFe148871f87d88DF3E8E3453ee14FB7";
+    const contract = new web3.eth.Contract(abi, contractAddress);
+
+    async function main() {
+      // Get available accounts from the node
+      const accounts = await web3.eth.getAccounts();
+      const sender = accounts[0];
+
+      // --- Read current message ---
+      const message = await contract.methods.message().call();
+      console.log("Message:", message);
+
+      // --- Send transaction to update message ---
+      const tx = await contract.methods.setMessage("Hello from JS!").send({
+        from: sender,
+        gas: 300000,
+        gasPrice: 0   // works if your chain accepts 0 gas price
+      });
+
+      console.log("Transaction hash:", tx.transactionHash);
+
+      // --- Verify updated message ---
+      const updated = await contract.methods.message().call();
+      console.log("Updated message:", updated);
+    }
+
+    // Run the main function
+    main().catch(console.error);
+
+3. Run the script:
+
+    node interact.mjs
+
+Expected Output
+---------------
+- The current stored message in the contract
+- The transaction hash of the update
+- The updated message value
+
+Notes
+-----
+- Replace rpcUrl with your own Ethereum node URL if different.
+- Update contractAddress to match your deployed contract.
+- Make sure the ABI file exists at build/contracts/MyContract.json.
+- Set gasPrice according to your chain configuration (some private PoA chains allow 0).
