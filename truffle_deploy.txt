@@ -1,0 +1,114 @@
+README - Deploying a Smart Contract with Truffle
+================================================
+
+This document describes the procedure for deploying a smart contract using **Truffle** on a local Ethereum network.
+
+---
+
+## 1. Prepare the environment
+
+1. Add storage to VM (if needed).
+2. Install npm:
+   ```bash
+   sudo apt install npm
+   ```
+3. Install Truffle globally:
+   ```bash
+   sudo npm install -g truffle
+   ```
+
+---
+
+## 2. Create and initialize project
+
+1. Create project folder and move inside:
+   ```bash
+   mkdir myproject
+   cd myproject
+   ```
+2. Initialize Truffle:
+   ```bash
+   truffle init
+   ```
+3. Remove default config file:
+   ```bash
+   rm truffle-config.js
+   ```
+
+---
+
+## 3. Configure Truffle
+
+Create a new `truffle-config.js` with the following content:
+
+```javascript
+module.exports = {
+  networks: {
+    local: {
+      host: "0.0.0.0",    // your local RPC host
+      port: 8545,               // RPC port
+      network_id: "1337",
+      gas: 6721975,
+      gasPrice: "0"            
+    },
+  },
+
+  // Specify compiler version
+  compilers: {
+    solc: {
+      version: "0.8.0",  // or the version your contract requires
+    },
+  },
+};
+```
+
+---
+
+## 4. Create the smart contract
+
+Inside `contracts/` create `MyContract.sol`:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract MyContract {
+    string public message;
+
+    constructor(string memory _message) {
+        message = _message;
+    }
+
+    function setMessage(string memory _message) public {
+        message = _message;
+    }
+}
+```
+
+---
+
+## 5. Create migration script
+
+Inside `migrations/` create `2_deploy_contracts.js`:
+
+```javascript
+const MyContract = artifacts.require("MyContract");
+
+module.exports = function (deployer) {
+  deployer.deploy(MyContract, "Hello, local network!");
+};
+```
+
+---
+
+## 6. Deploy the contract
+
+Run the following command to deploy:
+
+```bash
+truffle migrate --network local
+```
+
+---
+
+The contract will now be compiled and deployed to your configured local network.
